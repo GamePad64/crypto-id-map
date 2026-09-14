@@ -14,20 +14,28 @@ registry.
 
 ## Running
 
-No dependencies beyond the standard library. Python 3.14.
+Python 3.14, dependencies managed by [uv](https://docs.astral.sh/uv/):
 
 ```
-python3 check_iana.py            # verify what the map claims
-python3 check_iana.py --new      # also list what the registries have gained
-python3 check_iana.py --offline  # re-run against cached responses
+uv run check_iana.py            # verify what the map claims
+uv run check_iana.py --new      # also list what the registries have gained
+uv run check_iana.py --offline  # re-run against cached responses
 ```
+
+Four dependencies, each earning its place: **niquests** (one HTTP/2 connection
+for all ten registries instead of ten handshakes, with retries), **rich** (the
+`--new` listing runs past a hundred rows — a table gets read, a wall of lines
+gets skimmed), **platformdirs** (cache in the OS cache directory, so a checkout
+stays clean), **click** (subcommands, once there is a second source to check).
 
 Exit code is 1 on a disagreement or a fetch failure, 0 otherwise. New registry
 entries do **not** fail the run: a check that breaks every time IANA assigns a
 codepoint gets muted, and then the real findings go unseen too.
 
-Responses are cached under `.cache/` (git-ignored) so a failing run can be
-re-examined without fetching again.
+Responses are cached under the platform cache directory —
+`~/.cache/crypto-id-map` on Linux — so a failing run can be re-examined without
+fetching again. The cache has no expiry: a stale cache producing a stale report
+is less harmful than a check that cannot run without network.
 
 ## What the check actually does
 

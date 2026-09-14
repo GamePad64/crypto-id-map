@@ -18,26 +18,31 @@ whether the map is wrong or the world moved, and an auto-fix would erase that
 distinction.
 
 Usage:
-    python check_iana.py            # report, exit 1 on any mismatch
-    python check_iana.py --new      # also list registry entries we don't cite
-    python check_iana.py --offline  # use cached responses, no network
+    uv run check_iana.py            # report, exit 1 on any mismatch
+    uv run check_iana.py --new      # also list registry entries we don't cite
+    uv run check_iana.py --offline  # use cached responses, no network
 """
 
 from __future__ import annotations
 
-import argparse
 import csv
 import re
 import sys
-import urllib.error
-import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import click
+import niquests
+from platformdirs import user_cache_path
+from rich.console import Console
+from rich.table import Table
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-CACHE_DIR = Path(__file__).resolve().parent / ".cache"
+CACHE_DIR = user_cache_path("crypto-id-map", ensure_exists=True) / "registries"
 USER_AGENT = "crypto-id-map/1.0 (registry consistency check)"
 TIMEOUT = 30
+
+console = Console()
 
 
 @dataclass(frozen=True)
@@ -273,7 +278,7 @@ class Report:
         return [f for f in self.findings if f.kind == "new"]
 
 
-def fetch(url: str, *, offline: bool) -> str:
+def fetch(session: niquests.Session | None, url: str, *, offline: bool) -> str:
     """Fetch a registry, caching the response.
 
     The cache lets a failing check be re-run without hammering IANA, and is what
@@ -281,7 +286,7 @@ def fetch(url: str, *, offline: bool) -> str:
     cache producing a stale report is less harmful than a check that cannot run
     without network.
     """
-    CACHE_DIR.mkdir(exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cache_file = CACHE_DIR / (re.sub(r"[^A-Za-z0-9._-]", "_", url) + ".csv")
 
     if offline:
@@ -289,17 +294,30 @@ def fetch(url: str, *, offline: bool) -> str:
             raise FileNotFoundError(f"no cached copy of {url}")
         return cache_file.read_text(encoding="utf-8")
 
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=TIMEOUT) as response:
-        body = response.read().decode("utf-8")
+    assert session is not None, "a session is required when not offline"
+    response = session.get(url, timeout=TIMEOUT)
+    response.raise_for_status()
+    body = response.text or ""
 
     # IANA answers a missing CSV with an HTML error page under a 200, so the
     # status code alone does not tell us whether this is data.
     if body.lstrip().lower().startswith("<!doctype"):
-        raise ValueError(f"returned HTML, not CSV — the registry may have moved")
+        raise ValueError("returned HTML, not CSV — the registry may have moved")
 
     cache_file.write_text(body, encoding="utf-8")
     return body
+
+
+def make_session() -> niquests.Session:
+    """One session for every registry.
+
+    All ten registries live on www.iana.org, so a shared session means one
+    connection and one TLS handshake instead of ten. Retries cover the
+    transient 5xx that a run should not fail on.
+    """
+    session = niquests.Session(retries=3)
+    session.headers.update({"User-Agent": USER_AGENT})
+    return session
 
 
 def normalise_value(raw: str, how: str) -> str | None:
@@ -333,9 +351,11 @@ def normalise_value(raw: str, how: str) -> str | None:
             return text
 
 
-def read_registry(reg: Registry, *, offline: bool) -> dict[str, tuple[str, str]]:
+def read_registry(
+    reg: Registry, session: niquests.Session | None, *, offline: bool
+) -> dict[str, tuple[str, str]]:
     """Registry as {normalised value: (name, description)}, placeholders dropped."""
-    body = fetch(reg.url, offline=offline)
+    body = fetch(session, reg.url, offline=offline)
     rows = csv.DictReader(body.splitlines())
 
     if rows.fieldnames is None or reg.value_column not in rows.fieldnames:
@@ -436,8 +456,10 @@ def names_agree(ours: str, theirs: str) -> bool:
     return False
 
 
-def check_registry(reg: Registry, *, offline: bool, find_new: bool) -> list[Finding]:
-    registry = read_registry(reg, offline=offline)
+def check_registry(
+    reg: Registry, session: niquests.Session | None, *, offline: bool, find_new: bool
+) -> list[Finding]:
+    registry = read_registry(reg, session, offline=offline)
     findings: list[Finding] = []
     cited: set[str] = set()
 
@@ -471,65 +493,102 @@ def check_registry(reg: Registry, *, offline: bool, find_new: bool) -> list[Find
 
 def run(*, offline: bool, find_new: bool) -> Report:
     report = Report()
-    for reg in REGISTRIES:
-        try:
-            findings = check_registry(reg, offline=offline, find_new=find_new)
-        except (urllib.error.URLError, ValueError, FileNotFoundError, OSError) as exc:
-            report.fetch_errors.append(f"{reg.key} ({reg.url}): {exc}")
-            continue
-        report.registries_read += 1
-        report.checked += len(read_our_values(reg))
-        report.findings.extend(findings)
+    session = None if offline else make_session()
+    try:
+        for reg in REGISTRIES:
+            try:
+                findings = check_registry(
+                    reg, session, offline=offline, find_new=find_new
+                )
+            except (niquests.RequestException, ValueError, OSError) as exc:
+                report.fetch_errors.append(f"{reg.key} ({reg.url}): {exc}")
+                continue
+            report.registries_read += 1
+            report.checked += len(read_our_values(reg))
+            report.findings.extend(findings)
+    finally:
+        if session is not None:
+            session.close()
     return report
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Check IANA-sourced identifiers against the live registries."
-    )
-    parser.add_argument("--new", action="store_true",
-                        help="also list registry entries the map does not cite")
-    parser.add_argument("--offline", action="store_true",
-                        help="use cached responses instead of fetching")
-    args = parser.parse_args()
+def findings_table(title: str, findings: list[Finding], *, style: str) -> Table:
+    """Findings as a table.
 
-    report = run(offline=args.offline, find_new=args.new)
+    The `--new` listing runs past a hundred rows, and a wall of prose lines is
+    something a reader skims rather than reads. Columns let the eye find the
+    registry it cares about.
+    """
+    table = Table(title=title, title_style=style, title_justify="left",
+                  header_style="bold", show_lines=False)
+    table.add_column("Registry", style="cyan", no_wrap=True)
+    table.add_column("Value", style="yellow", no_wrap=True)
+    table.add_column("Ours")
+    table.add_column("Registry says")
+    table.add_column("File", style="dim", no_wrap=True)
+
+    for finding in findings:
+        table.add_row(
+            finding.registry,
+            finding.value,
+            finding.ours or "—",
+            finding.theirs or "—",
+            finding.source_file or "—",
+        )
+    return table
+
+
+@click.command()
+@click.option("--new", "find_new", is_flag=True,
+              help="Also list registry entries the map does not cite.")
+@click.option("--offline", is_flag=True,
+              help="Use cached responses instead of fetching.")
+def main(find_new: bool, offline: bool) -> None:
+    """Check IANA-sourced identifiers against the live registries."""
+    with console.status("Reading registries..."):
+        report = run(offline=offline, find_new=find_new)
 
     if report.fetch_errors:
-        print(f"Could not read ({len(report.fetch_errors)}):")
+        console.print(f"[bold red]Could not read ({len(report.fetch_errors)})[/]")
         for error in report.fetch_errors:
-            print(f"  {error}")
-        print()
+            console.print(f"  {error}")
+        console.print()
 
     if report.problems:
-        print(f"Problems ({len(report.problems)}):")
-        for finding in report.problems:
-            print(f"  {finding}")
-        print()
+        console.print(findings_table(
+            f"Problems ({len(report.problems)})", report.problems, style="bold red"
+        ))
+        console.print()
 
     if report.additions:
-        print(f"In the registries but not in the map ({len(report.additions)}):")
-        for finding in report.additions:
-            print(f"  {finding}")
-        print()
+        console.print(findings_table(
+            f"In the registries but not in the map ({len(report.additions)})",
+            report.additions,
+            style="bold yellow",
+        ))
+        console.print()
 
-    print(f"Checked {report.checked} citations across "
-          f"{report.registries_read}/{len(REGISTRIES)} registries.")
+    console.print(
+        f"Checked [bold]{report.checked}[/] citations across "
+        f"[bold]{report.registries_read}/{len(REGISTRIES)}[/] registries."
+    )
 
     if not report.problems and not report.fetch_errors:
-        print("No disagreements with IANA.")
-    if not args.new:
-        print("Run with --new to see what the registries have gained since.")
+        console.print("[bold green]No disagreements with IANA.[/]")
+    if not find_new:
+        console.print(
+            "[dim]Run with --new to see what the registries have gained since.[/]"
+        )
 
-    print("\nNot checked here (other sources, other scripts):")
+    console.print("\n[dim]Not checked here (other sources, other scripts):[/]")
     for column, why in sorted(UNCHECKED.items()):
-        print(f"  {column}: {why}")
+        console.print(f"  [dim]{column}: {why}[/]")
 
     # Exit non-zero only for actual disagreements. New registry entries are
     # information, not failure: a CI job that breaks every time IANA adds a
     # codepoint gets muted, and then the real problems go unseen too.
-    return 1 if (report.problems or report.fetch_errors) else 0
+    sys.exit(1 if (report.problems or report.fetch_errors) else 0)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

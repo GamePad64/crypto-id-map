@@ -5,7 +5,17 @@ description = "Consistency checks for the crypto-id-map data against upstream re
 readme = "README.md"
 requires-python = ">=3.14"
 
-# None, deliberately. The checks fetch CSV over HTTPS and compare it to CSV on
-# disk — both in the standard library. A reference that verifies itself should
-# not be harder to run than the thing it verifies.
-dependencies = []
+dependencies = [
+    # HTTP/2 and connection reuse against a single host. Ten registry fetches
+    # over one connection rather than ten handshakes, with retries that do not
+    # have to be hand-rolled.
+    "niquests>=3.21",
+    # The --new listing runs to over a hundred rows. Plain print makes that a
+    # wall; a table makes it something a person actually reads to the end.
+    "rich>=15.0",
+    # Cache in the OS cache directory rather than beside the script, so a
+    # checkout stays clean and the cache survives one.
+    "platformdirs>=4.11",
+    # Subcommands, once there is more than one source to check.
+    "click>=8.5",
+]

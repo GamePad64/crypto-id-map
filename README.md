@@ -458,12 +458,12 @@ The verification date at the top matters: this is a snapshot, and registries
 gain entries continuously.
 
 [`scripts/check_iana.py`](scripts/README.md) re-checks the IANA-sourced values
-against the live registries and lists what the registries have gained since.
-Standard library only:
+against the live registries and lists what the registries have gained since:
 
 ```
-python3 scripts/check_iana.py          # verify what the map claims
-python3 scripts/check_iana.py --new    # list entries the map does not cite
+cd scripts
+uv run check_iana.py          # verify what the map claims
+uv run check_iana.py --new    # list entries the map does not cite
 ```
 
 At the last run: 187 citations across ten registries, no disagreements.
