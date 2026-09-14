@@ -248,6 +248,13 @@ ACCEPTED_DIVERGENCES: dict[tuple[str, str], str] = {
     ("pgp_algo_id", "22"):
         "EdDSALegacy: the MPI-encoded Ed25519, distinct from id 27 and giving "
         "the same key a different fingerprint",
+    ("tls_sig", "0x0840"):
+        "the registry says 'Reserved for backward compatibility' and it is "
+        "right: this is not an assignment but a blocking reservation for TLS "
+        "1.2 SignatureAlgorithm 64, which shows through at 0x08||0x40. The map "
+        "names the algorithm behind the reservation, which the registry "
+        "deliberately does not",
+    ("tls_sig", "0x0841"): "the 512-bit half of the same reservation",
 }
 
 

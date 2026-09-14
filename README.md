@@ -213,6 +213,15 @@ while signatures and key exchange are negotiated through their own registries �
 the same registries this map covers. Five suites replaced hundreds. HPKE was
 designed per-axis from the start, and this map is organised the same way.
 
+**A national standard replaces the whole symmetric layer.** The GOST suites
+(`0xC100`–`0xC106`) are the clearest case: TLS 1.3 with GOST does **not** use
+`TLS_AES_128_GCM_SHA256` or its siblings. It defines its own suites over
+Kuznyechik and Magma in MGM mode, with GOST R 34.11-2012 as the hash. So the
+TLS 1.3 design — a suite names only the AEAD and the hash, everything else is
+negotiated separately — holds structurally while every algorithm inside is
+replaced. The `_L` and `_S` variants differ in how much key material is used
+before rekeying, not in the algorithm.
+
 Two things in the file that mislead on sight:
 
 - **The hash in a TLS 1.3 suite name is the PRF, not a MAC.** GCM and
@@ -329,6 +338,25 @@ ones, and JOSE never got the replacements at all.
 **Named Information stops numbering.** Numeric ids in that registry end at 12.
 Everything added later — BLAKE2, KT128/KT256 — exists as a name string only, so
 code expecting an integer will not find one.
+
+**One TLS registry shows through into another.** TLS 1.2 named signatures in
+`SignatureAlgorithm` — a one-byte value paired with a one-byte hash. TLS 1.3
+replaced that with the 16-bit `SignatureScheme`, whose low byte is the old
+`hash‖signature` pair. So a TLS 1.2 allocation appears in the TLS 1.3 registry
+at a computable address, and the two registries overlap rather than sit beside
+each other.
+
+GOST is where this surfaces. RFC 9189 assigns `SignatureAlgorithm` 64 and 65,
+which show through at `0x0840` and `0x0841`, and the RFC reserved those to stop
+anyone else being allocated them. IANA's own note admits the values "were
+allocated from the Reserved state due to a misunderstanding of the difference
+between Reserved and Unallocated that went undetected for a long time", and that
+new allocations belong in `SignatureScheme`.
+
+Reading `0x0840` as a GOST signature scheme is therefore wrong twice over: it is
+a blocking reservation, not an assignment, and the real GOST schemes are
+`0x0709`–`0x070F` from RFC 9367. (This map said otherwise until it was
+checked — which is the argument for checking.)
 
 **`RSA-OAEP` in JOSE means SHA-1**, and JOSE rates it `Recommended+` while the
 safer `RSA-OAEP-256` is merely `Optional`. Reading the bare name as "OAEP with

@@ -343,8 +343,14 @@ def check_registry(
     for value, algorithm, filename in read_our_values(reg):
         cited.add(value)
         if value not in registry:
-            findings.append(Finding("missing", reg.key, value,
-                                    ours=algorithm, source_file=filename))
+            # An accepted divergence also covers absence, because a value can be
+            # deliberately held rather than assigned: TLS 0x0840 reads
+            # "Reserved for backward compatibility", which the placeholder
+            # filter drops, while the reservation itself is the thing the map
+            # documents.
+            if (reg.key, value) not in accepted:
+                findings.append(Finding("missing", reg.key, value,
+                                        ours=algorithm, source_file=filename))
             continue
         name, description = registry[value]
         # Either column may be the one that resembles our spelling: the short
