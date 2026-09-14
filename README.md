@@ -455,8 +455,22 @@ from a draft rather than a published RFC, the `status` column says so, because
 draft codepoints can change.
 
 The verification date at the top matters: this is a snapshot, and registries
-gain entries continuously. A script that diffs these files against the live
-registries would be a welcome contribution.
+gain entries continuously.
+
+[`scripts/check_iana.py`](scripts/README.md) re-checks the IANA-sourced values
+against the live registries and lists what the registries have gained since.
+Standard library only:
+
+```
+python3 scripts/check_iana.py          # verify what the map claims
+python3 scripts/check_iana.py --new    # list entries the map does not cite
+```
+
+At the last run: 187 citations across ten registries, no disagreements.
+
+The other sources — OIDs, multicodec, SSH names, OpenPGP algorithm IDs, JOSE —
+are still checked by hand. `check_iana.py` names them in its output so the gap
+stays visible; a script for any of them is a welcome contribution.
 
 ## License
 
