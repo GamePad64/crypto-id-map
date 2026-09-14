@@ -1,18 +1,18 @@
-algorithm,cose_alg,jose_alg,x509_oid,status,notes
-AES-CBC-128,-65531,,2.16.840.1.101.3.4.1.2,deprecated,COSE value sits in the private-use range and is registered as Deprecated
-AES-CBC-192,-65530,,2.16.840.1.101.3.4.1.22,deprecated,private-use range; Deprecated
-AES-CBC-256,-65529,,2.16.840.1.101.3.4.1.42,deprecated,private-use range; Deprecated
-AES-CTR-128,-65534,,,deprecated,private-use range; Deprecated; no NIST CTR OID in the aes arc
-AES-CTR-192,-65533,,,deprecated,private-use range; Deprecated
-AES-CTR-256,-65532,,,deprecated,private-use range; Deprecated
-AES-ECB-128,,,2.16.840.1.101.3.4.1.1,rfc,OID only; never in COSE or JOSE
-AES-ECB-192,,,2.16.840.1.101.3.4.1.21,rfc,OID only
-AES-ECB-256,,,2.16.840.1.101.3.4.1.41,rfc,OID only
-AES-OFB-128,,,2.16.840.1.101.3.4.1.3,rfc,OID only
-AES-OFB-192,,,2.16.840.1.101.3.4.1.23,rfc,OID only
-AES-OFB-256,,,2.16.840.1.101.3.4.1.43,rfc,OID only
-AES-CFB-128,,,2.16.840.1.101.3.4.1.4,rfc,OID only
-AES-CFB-192,,,2.16.840.1.101.3.4.1.24,rfc,OID only
-AES-CFB-256,,,2.16.840.1.101.3.4.1.44,rfc,OID only
-ChaCha20 raw,,,,none,unregistered everywhere; only the AEAD combination with Poly1305 has identifiers
-3DES (des-EDE3-CBC),,,1.2.840.113549.3.7,deprecated,absent from COSE and JOSE entirely; RSADSI arc not NIST; still arrives via legacy PKCS#12 and PKCS#7
+algorithm,cose_alg,jose_enc,iana_aead,hpke_aead,x509_oid,status,notes
+AES-128-CBC,-65531,,,,2.16.840.1.101.3.4.1.2,deprecated,COSE value sits in the private-use range and is registered as Deprecated
+AES-192-CBC,-65530,,,,2.16.840.1.101.3.4.1.22,deprecated,private-use range; Deprecated
+AES-256-CBC,-65529,,,,2.16.840.1.101.3.4.1.42,deprecated,private-use range; Deprecated
+AES-128-CTR,-65534,,,,,deprecated,private-use range; Deprecated; no NIST CTR OID in the aes arc
+AES-192-CTR,-65533,,,,,deprecated,private-use range; Deprecated
+AES-256-CTR,-65532,,,,,deprecated,private-use range; Deprecated
+AES-128-ECB,,,,,2.16.840.1.101.3.4.1.1,rfc,OID only; never in COSE or JOSE
+AES-192-ECB,,,,,2.16.840.1.101.3.4.1.21,rfc,OID only
+AES-256-ECB,,,,,2.16.840.1.101.3.4.1.41,rfc,OID only
+AES-128-OFB,,,,,2.16.840.1.101.3.4.1.3,rfc,OID only
+AES-192-OFB,,,,,2.16.840.1.101.3.4.1.23,rfc,OID only
+AES-256-OFB,,,,,2.16.840.1.101.3.4.1.43,rfc,OID only
+AES-128-CFB,,,,,2.16.840.1.101.3.4.1.4,rfc,OID only
+AES-192-CFB,,,,,2.16.840.1.101.3.4.1.24,rfc,OID only
+AES-256-CFB,,,,,2.16.840.1.101.3.4.1.44,rfc,OID only
+ChaCha20 raw,,,,,,none,unregistered everywhere; only the AEAD combination with Poly1305 has identifiers
+3DES (des-EDE3-CBC),,,,,1.2.840.113549.3.7,deprecated,absent from COSE and JOSE entirely; RSADSI arc not NIST; still arrives via legacy PKCS#12 and PKCS#7

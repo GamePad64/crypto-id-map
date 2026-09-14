@@ -6,9 +6,9 @@ AES-128-CCM,10/12/30/32,,3,,2.16.840.1.101.3.4.1.7,rfc,COSE splits by nonce and 
 AES-256-CCM,11/13/31/33,,4,,2.16.840.1.101.3.4.1.47,rfc,COSE splits by nonce and tag length so there is no 1:1 mapping
 ChaCha20-Poly1305,24,,29,0x0003,1.2.840.113549.1.9.16.3.18,rfc,
 XChaCha20-Poly1305,,,38,,,draft,IANA AEAD registry only; draft-irtf-cfrg-xchacha-03
-AES-SIV-CMAC-256,,,15,,,rfc,total key 32 bytes so AES-128 internally
-AES-SIV-CMAC-384,,,16,,,rfc,total key 48 bytes so AES-192 internally
-AES-SIV-CMAC-512,,,17,,,rfc,total key 64 bytes so AES-256 internally
+AES-SIV-CMAC-256,,,15,,,rfc,registry name kept verbatim: RFC 5297 counts the total key so this is AES-128 internally with a 32-byte key
+AES-SIV-CMAC-384,,,16,,,rfc,registry name kept verbatim: AES-192 internally with a 48-byte key
+AES-SIV-CMAC-512,,,17,,,rfc,registry name kept verbatim: AES-256 internally with a 64-byte key
 AES-128-GCM-SIV,,,30,,,rfc,IANA AEAD registry only
 AES-256-GCM-SIV,,,31,,,rfc,IANA AEAD registry only
 XAES-256-GCM,,,39,,,other,spec at c2sp.org not IETF
@@ -18,5 +18,5 @@ AEGIS-128X2,,,34,,,rfc,IANA AEAD registry only
 AEGIS-128X4,,,35,,,rfc,IANA AEAD registry only
 AEGIS-256X2,,,36,,,rfc,IANA AEAD registry only
 AEGIS-256X4,,,37,,,rfc,IANA AEAD registry only
-A128CBC-HS256,,A128CBC-HS256,,,,rfc,JOSE only; composite construction not a registered AEAD
-A256CBC-HS512,,A256CBC-HS512,,,,rfc,JOSE only; composite construction not a registered AEAD
+A128CBC-HS256,,A128CBC-HS256,,,,rfc,JOSE only; AES-128-CBC composed with HMAC-SHA256 rather than a registered AEAD
+A256CBC-HS512,,A256CBC-HS512,,,,rfc,JOSE only; AES-256-CBC composed with HMAC-SHA512 rather than a registered AEAD
