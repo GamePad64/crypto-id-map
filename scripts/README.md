@@ -5,12 +5,16 @@ have nothing in common beyond the fact that we cite them.
 
 | Script | Source | Covers |
 |---|---|---|
-| `check_iana.py` | IANA registries | COSE (algorithms, key types, curves), IANA AEAD, HPKE (KEM/KDF/AEAD), TLS (SignatureScheme, Supported Groups), Named Information |
+| `check_iana.py` | IANA registries | COSE (algorithms, key types, curves), JOSE (alg/enc, kty, crv), IANA AEAD, HPKE (KEM/KDF/AEAD), TLS (SignatureScheme, Supported Groups), Named Information, SSH, OpenPGP, the PKIX OID arc |
+| `check_multicodec.py` | multiformats table on GitHub | multicodec public and private key codes, multihash codes |
 
-Not yet written, and named in `check_iana.py`'s output so the gap stays
-visible: OIDs (NIST CSOR and ITU-T), multicodec (a GitHub table), SSH names
-(part IANA, part OpenSSH convention), OpenPGP algorithm IDs, and the JOSE
-registry.
+`registrycheck.py` holds the comparison itself; each script supplies only what
+differs — where the data is and what its columns are called.
+
+**One source stays hand-checked: the NIST OID arc** (`2.16.840.1.101.3.4.*`).
+NIST CSOR publishes it as HTML with no machine-readable form. The PKIX arc
+(`1.3.6.1.5.5.7.6`, where the composite signature OIDs live) *is* checked, via
+IANA's SMI registry.
 
 ## Running
 
@@ -20,7 +24,12 @@ Python 3.14, dependencies managed by [uv](https://docs.astral.sh/uv/):
 uv run check_iana.py            # verify what the map claims
 uv run check_iana.py --new      # also list what the registries have gained
 uv run check_iana.py --offline  # re-run against cached responses
+
+uv run check_multicodec.py      # same flags, different source
 ```
+
+At the last run: 239 citations across 17 IANA registries and 43 against the
+multicodec table, no disagreements.
 
 Four dependencies, each earning its place: **niquests** (one HTTP/2 connection
 for all ten registries instead of ten handshakes, with retries), **rich** (the
@@ -70,11 +79,20 @@ guessable:
   writes `-8`.
 - `our_files` / `our_column` — where the map cites this registry.
 
-Two traps worth knowing before you add the next one:
+Traps worth knowing before you add the next one:
 
 - **A missing CSV returns HTML under a 200 status.** The fetcher checks for a
   doctype rather than trusting the status code.
 - **Filenames do not follow the page URL.** The AEAD registry page holds two
   tables and the algorithms live in `aead-parameters-2.csv`; Named Information
-  serves `hash-alg.csv`, not `named-information.csv`. Read the page's download
-  link rather than guessing.
+  serves `hash-alg.csv`, not `named-information.csv`; the SMI registry names its
+  files after the OID arc itself. Read the page's download link rather than
+  guessing.
+- **Header cells may carry quotes or padding.** JOSE's key-type column is
+  literally `"kty" Parameter Value`, quotes included; the multicodec table pads
+  every column for alignment. Column lookup strips whitespace for this reason.
+- **Scope the source to the file where a row means the same thing.** multicodec
+  names *keys* while `signatures.csv` names *algorithms*: `0x1200` is "P-256
+  public key", which serves ECDSA-P256-SHA256 and ECDH-P256 alike. Checking the
+  signature file against it produced two dozen differences that all said the
+  same true thing. Only `key-types.csv` is checked there.

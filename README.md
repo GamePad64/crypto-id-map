@@ -457,20 +457,24 @@ draft codepoints can change.
 The verification date at the top matters: this is a snapshot, and registries
 gain entries continuously.
 
-[`scripts/check_iana.py`](scripts/README.md) re-checks the IANA-sourced values
-against the live registries and lists what the registries have gained since:
+[`scripts/`](scripts/README.md) re-checks the values against their sources and
+lists what those sources have gained since:
 
 ```
 cd scripts
-uv run check_iana.py          # verify what the map claims
+uv run check_iana.py          # COSE, JOSE, TLS, HPKE, AEAD, SSH, OpenPGP, PKIX OIDs
+uv run check_multicodec.py    # multicodec and multihash codes
 uv run check_iana.py --new    # list entries the map does not cite
 ```
 
-At the last run: 187 citations across ten registries, no disagreements.
+At the last run: 239 citations across 17 IANA registries and 43 against the
+multicodec table — 282 of the map's identifiers verified, no disagreements.
 
-The other sources — OIDs, multicodec, SSH names, OpenPGP algorithm IDs, JOSE —
-are still checked by hand. `check_iana.py` names them in its output so the gap
-stays visible; a script for any of them is a welcome contribution.
+**One source stays hand-checked:** the NIST OID arc
+(`2.16.840.1.101.3.4.*`), published as HTML with no machine-readable form. The
+PKIX arc, where the composite signature OIDs live, is checked through IANA's SMI
+registry. The scripts name what they did not verify in their own output, so the
+gap stays visible rather than reading as a clean bill of health.
 
 ## License
 
