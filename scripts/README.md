@@ -7,14 +7,23 @@ have nothing in common beyond the fact that we cite them.
 |---|---|---|
 | `check_iana.py` | IANA registries | COSE (algorithms, key types, curves), JOSE (alg/enc, kty, crv), IANA AEAD, HPKE (KEM/KDF/AEAD), TLS (SignatureScheme, Supported Groups), Named Information, SSH, OpenPGP, the PKIX OID arc |
 | `check_multicodec.py` | multiformats table on GitHub | multicodec public and private key codes, multihash codes |
+| `check_key_params.py` | IANA COSE and JOSE key parameter registries | the field labels inside COSE_Key and JWK |
+| `check_oids.py` | nothing — structural only | OID syntax, arc membership, agreement across files |
 
-`registrycheck.py` holds the comparison itself; each script supplies only what
-differs — where the data is and what its columns are called.
+`registrycheck.py` holds the comparison itself; the first two scripts supply
+only what differs — where the data is and what its columns are called. The
+other two have their own shape and say why in their module docstrings.
 
-**One source stays hand-checked: the NIST OID arc** (`2.16.840.1.101.3.4.*`).
-NIST CSOR publishes it as HTML with no machine-readable form. The PKIX arc
-(`1.3.6.1.5.5.7.6`, where the composite signature OIDs live) *is* checked, via
-IANA's SMI registry.
+**Every column in `data/` is now covered.** Not every one against a registry,
+though, and the difference matters:
+
+`check_oids.py` has no upstream to diff against. NIST CSOR publishes its arc as
+HTML; the ANSI and RSADSI arcs are not published as data at all. Only the PKIX
+arc (`1.3.6.1.5.5.7.6`, where the composite signature OIDs live) has a registry,
+and `check_iana.py` covers it. So the OIDs get syntax, a known-arc test, and a
+cross-file consistency check — which catches a mistyped digit, since a typo is
+unlikely to be made identically twice — but nothing confirms that a well-formed
+OID from a known arc is the *right* OID.
 
 ## Running
 
@@ -26,10 +35,13 @@ uv run check_iana.py --new      # also list what the registries have gained
 uv run check_iana.py --offline  # re-run against cached responses
 
 uv run check_multicodec.py      # same flags, different source
+uv run check_key_params.py      # same flags again
+uv run check_oids.py            # structural only, no flags
 ```
 
-At the last run: 239 citations across 17 IANA registries and 43 against the
-multicodec table, no disagreements.
+At the last run: 242 citations across 17 IANA registries, 43 against the
+multicodec table, 57 field labels, and 109 OIDs — every value in `data/`,
+no disagreements.
 
 Four dependencies, each earning its place: **niquests** (one HTTP/2 connection
 for all ten registries instead of ten handshakes, with retries), **rich** (the

@@ -1,4 +1,4 @@
-algorithm,cose_crv,jose_crv,tls_group,hpke_kem,x509_oid,multicodec_pub,status,notes
+algorithm,cose_crv,jwk_crv,tls_group,hpke_kem,x509_oid,multicodec_pub,status,notes
 X25519,4,X25519,29,0x0020,1.3.101.110,0xec,rfc,HPKE entry is DHKEM(X25519 HKDF-SHA256)
 X448,5,X448,30,0x0021,1.3.101.111,0x1204,rfc,HPKE entry is DHKEM(X448 HKDF-SHA512)
 ECDH-P256,1,P-256,23,0x0010,1.2.840.10045.3.1.7,0x1200,rfc,

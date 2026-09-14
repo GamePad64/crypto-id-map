@@ -464,17 +464,20 @@ lists what those sources have gained since:
 cd scripts
 uv run check_iana.py          # COSE, JOSE, TLS, HPKE, AEAD, SSH, OpenPGP, PKIX OIDs
 uv run check_multicodec.py    # multicodec and multihash codes
+uv run check_key_params.py    # COSE_Key and JWK field labels
+uv run check_oids.py          # OID syntax, arcs, cross-file agreement
 uv run check_iana.py --new    # list entries the map does not cite
 ```
 
-At the last run: 239 citations across 17 IANA registries and 43 against the
-multicodec table — 282 of the map's identifiers verified, no disagreements.
+At the last run: 242 IANA citations, 43 multicodec codes, 57 field labels and
+109 OIDs — every value in `data/`, no disagreements.
 
-**One source stays hand-checked:** the NIST OID arc
-(`2.16.840.1.101.3.4.*`), published as HTML with no machine-readable form. The
-PKIX arc, where the composite signature OIDs live, is checked through IANA's SMI
-registry. The scripts name what they did not verify in their own output, so the
-gap stays visible rather than reading as a clean bill of health.
+**Not every check is a registry diff, and the difference matters.** OIDs have no
+upstream to compare against: NIST CSOR publishes its arc as HTML, and the ANSI
+and RSADSI arcs are not published as data at all. Only the PKIX arc, where the
+composite signature OIDs live, has a registry. So the OIDs get a syntax check, a
+known-arc test and a cross-file consistency check — enough to catch a mistyped
+digit, not enough to confirm that a well-formed OID is the right one.
 
 ## License
 

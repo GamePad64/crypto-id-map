@@ -157,7 +157,7 @@ REGISTRIES: tuple[Registry, ...] = (
         value_column="Curve Name",
         name_column="Curve Name",
         description_column="Curve Description",
-        our_files=("key-types.csv",),
+        our_files=("key-types.csv", "kem.csv"),
         our_column="jwk_crv",
         normalise="str",
     ),
