@@ -186,9 +186,10 @@ REGISTRIES: tuple[Registry, ...] = (
         url="https://www.iana.org/assignments/smi-numbers/smi-numbers-1.3.6.1.5.5.7.6.csv",
         value_column="Decimal",
         name_column="Description",
-        our_files=("signatures.csv",),
+        our_files=("signatures.csv", "kem.csv"),
         our_column="x509_oid",
-        notes="composite signature OIDs; the file is named after the arc itself",
+        arc="1.3.6.1.5.5.7.6",
+        notes="composite signature and KEM OIDs; the file is named after the arc itself",
     ),
 )
 

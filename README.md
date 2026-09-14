@@ -57,8 +57,10 @@ Three unification attempts exist, and all ran into the same wall:
 
 The post-quantum transition made the divergence visible: **hybrids** are
 combinations of algorithms from different families, and they need identifiers.
-Composite signatures got an OID (PKIX cannot function without one) and nothing
-in COSE.
+Composite signatures got OIDs — 18 of them, plus 12 more for composite KEMs —
+because PKIX cannot function without one. They got nothing anywhere else: no
+COSE, no JOSE, no TLS, no multicodec. Thirty algorithms that exist in exactly
+one namespace.
 
 ## Prior art
 
@@ -303,8 +305,12 @@ the same convention, so `Aes256SivAead` is the right type and it maps to 17, not
 **Dead values still in circulation.**
 
 - Composite signature OIDs moved arcs. Draft −00 used the Entrust arc
-  `2.16.840.1.114027.80.8.1.{3,10}`; those are dead. The live values are on
-  `1.3.6.1.5.5.7.6.*`, early-allocated on 2025-10-20.
+  `2.16.840.1.114027.80.8.1.{3,10}`; those are dead. The live values are
+  `1.3.6.1.5.5.7.6.37`–`.54`, and the registry now cites them to
+  `RFC-ietf-lamps-pq-composite-sigs-19` — an approved document waiting on an RFC
+  number, not a draft that might still move. The composite *KEM* OIDs
+  (`.55`–`.66`) are a step behind, still citing
+  `draft-ietf-lamps-pq-composite-kem-10`.
 - `X25519Kyber768Draft00` (TLS group `25497`, HPKE KEM `0x0030`) is
   pre-standardisation Kyber, not ML-KEM. Shipped widely, now obsolete.
 
@@ -540,13 +546,15 @@ uv run check_oids.py            # OID syntax, arcs, cross-file agreement
 uv run check_cipher_suites.py   # suite numbers, names, Recommended, decomposition
 uv run check_status.py          # the status column, against registry references
 uv run check_references.py      # RFC numbers cited in the notes
+uv run check_shape.py           # CSV structure; no network, always runs
 uv run check_iana.py --new      # list entries the map does not cite
 ```
 
-All seven are clean at the last run: 288 IANA citations, 43 multicodec codes, 57
-field labels, 137 OIDs, 22 cipher suites, 158 status cells and 27 RFC citations.
+All eight are clean at the last run: 318 IANA citations, 43 multicodec codes, 57
+field labels, 164 OIDs, 22 cipher suites, 188 status cells, 27 RFC citations and
+296 well-formed rows.
 
-**What that does and does not cover.** Of 1465 non-empty cells, 66% are compared
+**What that does and does not cover.** Of 1573 non-empty cells, 65% are compared
 against an external source, 20% are structural or cross-checked between files,
 and 14% — the `notes` column, and only that — cannot be machine-verified at all.
 There is no registry of assertions about algorithms, so a note's RFC numbers are

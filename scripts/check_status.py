@@ -37,6 +37,7 @@ from registrycheck import (
     fetch,
     make_session,
     normalise_value,
+    our_cell_values,
 )
 
 # What each status asserts, in terms a registry can contradict.
@@ -130,11 +131,7 @@ def row_evidence(
         cell = (row.get(reg.our_column) or "").strip()
         if not cell:
             continue
-        parts = [cell] if reg.normalise == "oid" else cell.split("/")
-        for part in parts:
-            value = normalise_value(part, reg.normalise)
-            if value is None:
-                continue
+        for value in our_cell_values(reg, cell):
             found = evidence.get((reg.our_column, value))
             if found is None:
                 continue

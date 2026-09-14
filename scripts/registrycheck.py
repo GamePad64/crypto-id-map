@@ -70,6 +70,19 @@ class Registry:
     strip_cells: bool = False
     """Strip whitespace inside cells. The multicodec table pads for alignment."""
 
+    arc: str = ""
+    """OID prefix to strip from our values before comparing.
+
+    The SMI registries are indexed by the last arc alone — `37`, not
+    `1.3.6.1.5.5.7.6.37` — while the map writes OIDs in full, because a bare
+    `37` means nothing outside its arc. Without this the two never meet: every
+    citation normalises to None and the check silently compares nothing.
+
+    That is not hypothetical. The PKIX entry ran for ten commits reporting no
+    disagreements while reading zero citations, which is the failure mode this
+    whole exercise exists to catch — a green check that checks nothing.
+    """
+
     notes: str = ""
 
 
@@ -302,12 +315,37 @@ def read_registry(
     return entries
 
 
-def read_our_values(reg: Registry) -> list[tuple[str, str, str]]:
-    """Our citations as (normalised value, algorithm name, file).
+def our_cell_values(reg: Registry, cell: str) -> list[str]:
+    """The normalised values one of our cells cites for this registry.
 
     A cell may hold several values — COSE splits AES-CCM by nonce and tag
-    length, so one algorithm cites `10/12/30/32`. Each is checked separately.
+    length, so one algorithm cites `10/12/30/32` — and an arc-numbered registry
+    needs its prefix removed first. Shared so that every script reads our data
+    the same way; when only `check_iana.py` knew about arcs, `check_status.py`
+    silently saw nothing for the same column.
     """
+    cell = cell.strip()
+    if not cell:
+        return []
+    parts = [cell] if reg.normalise == "oid" else cell.split("/")
+    values: list[str] = []
+    for part in parts:
+        part = part.strip()
+        if reg.arc:
+            # An SMI registry numbers its rows by the last arc only. A value
+            # outside the arc belongs to another authority and is not this
+            # registry's to confirm.
+            if not part.startswith(reg.arc + "."):
+                continue
+            part = part[len(reg.arc) + 1:]
+        value = normalise_value(part, reg.normalise)
+        if value is not None:
+            values.append(value)
+    return values
+
+
+def read_our_values(reg: Registry) -> list[tuple[str, str, str]]:
+    """Our citations as (normalised value, algorithm name, file)."""
     out: list[tuple[str, str, str]] = []
     for filename in reg.our_files:
         path = DATA_DIR / filename
@@ -319,12 +357,8 @@ def read_our_values(reg: Registry) -> list[tuple[str, str, str]]:
                 if not cell:
                     continue
                 algorithm = (row.get("algorithm") or row.get("key_type") or "?").strip()
-                # Split on "/" for multi-valued cells, but not inside an OID.
-                parts = [cell] if reg.normalise == "oid" else cell.split("/")
-                for part in parts:
-                    value = normalise_value(part, reg.normalise)
-                    if value is not None:
-                        out.append((value, algorithm, filename))
+                for value in our_cell_values(reg, cell):
+                    out.append((value, algorithm, filename))
     return out
 
 

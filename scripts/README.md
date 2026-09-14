@@ -12,6 +12,7 @@ have nothing in common beyond the fact that we cite them.
 | `check_cipher_suites.py` | IANA TLS cipher suite registry | suite numbers, exact names, the `Recommended` flag, references, and the kx/auth/cipher/hash decomposition against the name |
 | `check_status.py` | the `Reference` and `Recommended` columns of every registry above | the `status` column |
 | `check_references.py` | IETF datatracker | RFC numbers cited in prose: that they exist, and that an Informational RFC is not described as a standard |
+| `check_shape.py` | nothing — structural only | column counts, headers, duplicate algorithm names. Needs no network, so it always runs |
 
 `registrycheck.py` holds the comparison itself; the first two scripts supply
 only what differs — where the data is and what its columns are called. The
@@ -21,13 +22,13 @@ others have their own shape and say why in their module docstrings.
 
 The data was assembled by reading specifications, which is to say by a process
 that can be confidently wrong. The scripts exist to make that checkable, so it
-is worth being exact about how far they reach. Of 1465 non-empty cells:
+is worth being exact about how far they reach. Of 1573 non-empty cells:
 
 | | cells | |
 |---|---|---|
-| compared against an external source | 972 | 66% |
-| structural, or cross-checked between files | 293 | 20% |
-| not machine-verifiable | 200 | 14% |
+| compared against an external source | 1026 | 65% |
+| structural, or cross-checked between files | 320 | 20% |
+| not machine-verifiable | 227 | 14% |
 
 The last row is the `notes` column and nothing else. It is prose: there is no
 registry of assertions about algorithms, so `check_references.py` verifies the
@@ -66,12 +67,13 @@ uv run check_oids.py            # structural only, no flags
 uv run check_cipher_suites.py   # --new lists assigned suites the map omits
 uv run check_status.py          # --offline only
 uv run check_references.py      # asks the datatracker, no flags
+uv run check_shape.py           # CSV structure, no network, no flags
 ```
 
-At the last run, all seven clean: 288 IANA citations across 17 registries, 43
-against the multicodec table, 57 field labels, 137 OIDs, 22 cipher suites, 158
-status cells (41 more cite no machine-readable registry), and 27 RFC citations
-in prose across 14 documents.
+At the last run, all eight clean: 318 IANA citations across 17 registries, 43
+against the multicodec table, 57 field labels, 164 OIDs, 22 cipher suites, 188
+status cells (38 more cite no machine-readable registry), 27 RFC citations in
+prose across 14 documents, and 296 well-formed rows.
 
 Four dependencies, each earning its place: **niquests** (one HTTP/2 connection
 for all ten registries instead of ten handshakes, with retries), **rich** (the
@@ -116,6 +118,15 @@ wrong key size, a wrong key exchange, a draft-only algorithm relabelled `rfc`,
 an RFC-backed one relabelled `draft`, an invented status, a transposed RFC
 number. All were caught.
 
+The same technique found a bug in the checks themselves. The PKIX OID entry had
+been reporting "no disagreements" since it was added — while reading **zero**
+citations. The registry indexes its rows by the last arc alone (`37`), the map
+writes OIDs in full (`1.3.6.1.5.5.7.6.37`), and nothing reconciled the two, so
+every citation normalised away and the comparison ran over an empty set. A green
+check that checks nothing is worse than a missing one, because it answers the
+question you meant to ask. `Registry.arc` now strips the prefix, and the entry
+went from 0 citations to 30.
+
 Two things were learned from mutations that *weren't*:
 
 - ML-DSA-44 relabelled `rfc` was not flagged, and correctly so — it is RFC 9964
@@ -126,6 +137,12 @@ Two things were learned from mutations that *weren't*:
   rather than tuned. A check that cries wolf on correct data is worse than no
   check: it teaches the reader to skip the report, and then a real finding goes
   unseen too.
+- `check_shape.py` first flagged any identifier appearing twice in a column. All
+  22 findings were the map working as intended — one RSA-PSS OID serves six
+  rows because PSS carries its hash in ASN.1 parameters, and `ES256` appears
+  twice because TLS splits what JOSE keeps whole. Those collisions are the
+  asymmetries the document exists to record, so the check was pointed the wrong
+  way and was deleted.
 
 ## Adding a registry
 
