@@ -1,0 +1,11 @@
+[project]
+name = "crypto-id-map-checks"
+version = "0.1.0"
+description = "Consistency checks for the crypto-id-map data against upstream registries"
+readme = "README.md"
+requires-python = ">=3.14"
+
+# None, deliberately. The checks fetch CSV over HTTPS and compare it to CSV on
+# disk — both in the standard library. A reference that verifies itself should
+# not be harder to run than the thing it verifies.
+dependencies = []
