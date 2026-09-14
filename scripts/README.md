@@ -9,13 +9,38 @@ have nothing in common beyond the fact that we cite them.
 | `check_multicodec.py` | multiformats table on GitHub | multicodec public and private key codes, multihash codes |
 | `check_key_params.py` | IANA COSE and JOSE key parameter registries | the field labels inside COSE_Key and JWK |
 | `check_oids.py` | nothing — structural only | OID syntax, arc membership, agreement across files |
+| `check_cipher_suites.py` | IANA TLS cipher suite registry | suite numbers, exact names, the `Recommended` flag, references, and the kx/auth/cipher/hash decomposition against the name |
+| `check_status.py` | the `Reference` and `Recommended` columns of every registry above | the `status` column |
+| `check_references.py` | IETF datatracker | RFC numbers cited in prose: that they exist, and that an Informational RFC is not described as a standard |
 
 `registrycheck.py` holds the comparison itself; the first two scripts supply
 only what differs — where the data is and what its columns are called. The
-other two have their own shape and say why in their module docstrings.
+others have their own shape and say why in their module docstrings.
 
-**Every column in `data/` is now covered.** Not every one against a registry,
-though, and the difference matters:
+## What is actually verified
+
+The data was assembled by reading specifications, which is to say by a process
+that can be confidently wrong. The scripts exist to make that checkable, so it
+is worth being exact about how far they reach. Of 1465 non-empty cells:
+
+| | cells | |
+|---|---|---|
+| compared against an external source | 972 | 66% |
+| structural, or cross-checked between files | 293 | 20% |
+| not machine-verifiable | 200 | 14% |
+
+The last row is the `notes` column and nothing else. It is prose: there is no
+registry of assertions about algorithms, so `check_references.py` verifies the
+RFC numbers inside a note while the claim wrapped around them rests on review.
+
+That gap is not hypothetical. The map's one published factual error lived in a
+note — two TLS codepoints described as having "held GOST under RFC 9189" and
+been reallocated, neither half true — and it survived every check here, because
+no check reads prose. It was caught by a reader asking a question. **If you are
+relying on this map, the identifiers are checked and the prose is not.**
+
+Coverage against a registry is also not the same as coverage against a
+*registry*, and the difference matters:
 
 `check_oids.py` has no upstream to diff against. NIST CSOR publishes its arc as
 HTML; the ANSI and RSADSI arcs are not published as data at all. Only the PKIX
@@ -37,11 +62,16 @@ uv run check_iana.py --offline  # re-run against cached responses
 uv run check_multicodec.py      # same flags, different source
 uv run check_key_params.py      # same flags again
 uv run check_oids.py            # structural only, no flags
+
+uv run check_cipher_suites.py   # --new lists assigned suites the map omits
+uv run check_status.py          # --offline only
+uv run check_references.py      # asks the datatracker, no flags
 ```
 
-At the last run: 242 citations across 17 IANA registries, 43 against the
-multicodec table, 57 field labels, and 109 OIDs — every value in `data/`,
-no disagreements.
+At the last run, all seven clean: 288 IANA citations across 17 registries, 43
+against the multicodec table, 57 field labels, 137 OIDs, 22 cipher suites, 158
+status cells (41 more cite no machine-readable registry), and 27 RFC citations
+in prose across 14 documents.
 
 Four dependencies, each earning its place: **niquests** (one HTTP/2 connection
 for all ten registries instead of ten handshakes, with retries), **rich** (the
@@ -76,6 +106,26 @@ Where a name genuinely differs and both are right — TLS calling P-256
 `ACCEPTED_DIVERGENCES` with the reason written out. That list is what lets the
 matcher stay strict: loosening the heuristic until those passed would also let a
 wrong citation through.
+
+## Do the checks work?
+
+A check that passes proves nothing until it has been shown capable of failing.
+Each new script was tested by corrupting one cell at a time and confirming the
+run turned red: a flipped `Recommended` flag, a suite name off by one hash, a
+wrong key size, a wrong key exchange, a draft-only algorithm relabelled `rfc`,
+an RFC-backed one relabelled `draft`, an invented status, a transposed RFC
+number. All were caught.
+
+Two things were learned from mutations that *weren't*:
+
+- ML-DSA-44 relabelled `rfc` was not flagged, and correctly so — it is RFC 9964
+  in COSE and a draft in TLS at once, which is why its real status is `mixed`.
+  The mutation was a bad test, not a missed bug.
+- An earlier `check_references.py` compared each RFC's title against its row's
+  subject. Every finding was a false positive, so the comparison was removed
+  rather than tuned. A check that cries wolf on correct data is worse than no
+  check: it teaches the reader to skip the report, and then a real finding goes
+  unseen too.
 
 ## Adding a registry
 

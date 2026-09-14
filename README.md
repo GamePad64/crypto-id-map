@@ -526,28 +526,41 @@ the multicodec table — rather than from another aggregator. Where a value come
 from a draft rather than a published RFC, the `status` column says so, because
 draft codepoints can change.
 
-The verification date at the top matters: this is a snapshot, and registries
-gain entries continuously.
-
-[`scripts/`](scripts/README.md) re-checks the values against their sources and
-lists what those sources have gained since:
+The first draft was assembled by hand, which is a process that can be
+confidently and invisibly wrong. So the numbers are no longer asked to be
+trusted: [`scripts/`](scripts/README.md) re-derives them from the registries,
+and everything it can reach has been re-checked.
 
 ```
 cd scripts
-uv run check_iana.py          # COSE, JOSE, TLS, HPKE, AEAD, SSH, OpenPGP, PKIX OIDs
-uv run check_multicodec.py    # multicodec and multihash codes
-uv run check_key_params.py    # COSE_Key and JWK field labels
-uv run check_oids.py          # OID syntax, arcs, cross-file agreement
-uv run check_iana.py --new    # list entries the map does not cite
+uv run check_iana.py            # COSE, JOSE, TLS, HPKE, AEAD, SSH, OpenPGP, PKIX OIDs
+uv run check_multicodec.py      # multicodec and multihash codes
+uv run check_key_params.py      # COSE_Key and JWK field labels
+uv run check_oids.py            # OID syntax, arcs, cross-file agreement
+uv run check_cipher_suites.py   # suite numbers, names, Recommended, decomposition
+uv run check_status.py          # the status column, against registry references
+uv run check_references.py      # RFC numbers cited in the notes
+uv run check_iana.py --new      # list entries the map does not cite
 ```
 
-At the last run: 242 IANA citations, 43 multicodec codes, 57 field labels and
-109 OIDs — every value in `data/`, no disagreements.
+All seven are clean at the last run: 288 IANA citations, 43 multicodec codes, 57
+field labels, 137 OIDs, 22 cipher suites, 158 status cells and 27 RFC citations.
 
-**Not every check is a registry diff, and the difference matters.** OIDs have no
-upstream to compare against: NIST CSOR publishes its arc as HTML, and the ANSI
-and RSADSI arcs are not published as data at all. Only the PKIX arc, where the
-composite signature OIDs live, has a registry. So the OIDs get a syntax check, a
+**What that does and does not cover.** Of 1465 non-empty cells, 66% are compared
+against an external source, 20% are structural or cross-checked between files,
+and 14% — the `notes` column, and only that — cannot be machine-verified at all.
+There is no registry of assertions about algorithms, so a note's RFC numbers are
+checked while the claim wrapped around them is not.
+
+The map's one published factual error lived in exactly that gap: a note
+asserting that `0x0840`/`0x0841` held GOST under RFC 9189 and were later
+reallocated, which is wrong in both halves (see the footgun above). Every check
+passed; a reader's question caught it. **The identifiers here are verified. The
+prose is reviewed, which is not the same thing.**
+
+OIDs sit in between. NIST CSOR publishes its arc as HTML, and the ANSI and
+RSADSI arcs are not published as data at all; only the PKIX arc, where the
+composite signature OIDs live, has a registry. So OIDs get a syntax check, a
 known-arc test and a cross-file consistency check — enough to catch a mistyped
 digit, not enough to confirm that a well-formed OID is the right one.
 
