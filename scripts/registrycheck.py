@@ -194,9 +194,21 @@ def normalise_value(raw: str, how: str) -> str | None:
 KEY_TYPE_PREFIX = re.compile(r"^(OKP|EC2|AKP|RSA|Symmetric)/")
 
 
+# Spellings that mean the same thing across registries. Applied before the
+# alphanumeric reduction, so `RSASSA-PSS-rsae-SHA384` and `rsa_pss_rsae_sha384`
+# reduce to the same string instead of differing in the middle of one long run.
+SYNONYMS = (
+    ("RSASSA", "RSA"),
+    ("ECDSA", "ES"),
+)
+
+
 def signature(text: str) -> str:
     """Strip a name down to its alphanumerics, upper-cased."""
-    return re.sub(r"[^A-Za-z0-9]", "", text).upper()
+    reduced = re.sub(r"[^A-Za-z0-9]", "", text).upper()
+    for long_form, short_form in SYNONYMS:
+        reduced = reduced.replace(long_form, short_form)
+    return reduced
 
 
 def names_agree(ours: str, theirs: str) -> bool:

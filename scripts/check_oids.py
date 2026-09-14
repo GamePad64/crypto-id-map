@@ -41,8 +41,13 @@ OID_COLUMNS = ("x509_oid", "spki_oid")
 # Arcs the map draws on. The point is not completeness — it is that an OID
 # under none of these is unexplained, and an unexplained OID is worth a look.
 KNOWN_ARCS: dict[str, str] = {
+    "1.0.14888.3": "ISO/IEC 14888-3 — digital signatures with appendix",
+    "1.2.156.10197": "China OSCCA — SM2, SM3, SM4",
+    "1.2.643.2.2": "Russia — GOST, the older CryptoPro arc",
+    "1.2.643.7.1": "Russia — GOST R 34.10-2012 and R 34.11-2012",
     "1.2.840.10045": "ANSI X9.62 — elliptic curve",
     "1.2.840.113549": "RSADSI — PKCS",
+    "1.3.36.3.3.2.8": "BSI — Brainpool curves (RFC 5639)",
     "1.3.6.1.4.1": "IANA private enterprise numbers",
     "1.3.6.1.5.5.7": "PKIX (checked against IANA's SMI registry by check_iana.py)",
     "1.3.101": "IETF — Ed25519, Ed448, X25519, X448 (RFC 8410)",

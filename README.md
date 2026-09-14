@@ -93,6 +93,7 @@ from that registry.
 | [`data/cipher.csv`](data/cipher.csv) | unauthenticated ciphers |
 | [`data/key-types.csv`](data/key-types.csv) | key type identifiers |
 | [`data/key-params.csv`](data/key-params.csv) | field labels inside COSE_Key and JWK |
+| [`data/tls-cipher-suites.csv`](data/tls-cipher-suites.csv) | cipher suites, decomposed — see below |
 
 The `status` column says how solid the identifier is: `rfc` — backed by a
 published RFC; `draft` — draft only; `early-alloc` — early IANA allocation, so
@@ -190,6 +191,38 @@ cannot compare fingerprints across ecosystems. A format inventing its own — fo
 example `SHA-256` over a fixed byte concatenation — is not doing anything unusual;
 it is joining a field where everyone already disagrees.
 
+## Cipher suites: the file that maps to nothing
+
+`tls-cipher-suites.csv` is shaped differently from every other file here,
+because a cipher suite is not an algorithm identifier — it is a **composition**.
+`TLS_AES_128_GCM_SHA256` has no counterpart in COSE or as an OID; its *parts*
+do, and they are already in the other files. So this file decomposes instead of
+mapping: key exchange, authentication, cipher and mode, key size, PRF hash.
+
+It is here because the history is the clearest argument in this document for why
+per-axis registries won.
+
+**TLS 1.2 put four things in one number** — key exchange, authentication, cipher
+and MAC. The registry grew to **356 assigned suites, of which 14 are marked
+Recommended=Y: 3.9%**. Combinatorics did that: adding one cipher required a new
+codepoint for every combination it could appear in, and almost none of them were
+ever deployed.
+
+**TLS 1.3 abandoned the approach.** A suite now names only the symmetric half,
+while signatures and key exchange are negotiated through their own registries —
+the same registries this map covers. Five suites replaced hundreds. HPKE was
+designed per-axis from the start, and this map is organised the same way.
+
+Two things in the file that mislead on sight:
+
+- **The hash in a TLS 1.3 suite name is the PRF, not a MAC.** GCM and
+  ChaCha20-Poly1305 authenticate by themselves; `SHA384` in
+  `TLS_AES_256_GCM_SHA384` names the HKDF hash used for key schedule.
+- **`TLS_AES_128_CCM_8_SHA256` (`0x1305`) is the one TLS 1.3 suite not
+  recommended.** The `_8` truncates the authentication tag to 8 bytes, dropping
+  forgery resistance to about 2⁶⁴ — defensible on constrained links, not in
+  general.
+
 ## Gaps: widely used, registered nowhere
 
 | Algorithm | Where it is used | Only identifier anywhere |
@@ -268,9 +301,20 @@ the same convention, so `Aes256SivAead` is the right type and it maps to 17, not
 
 **Registries that split where others do not.**
 
-- TLS splits RSASSA-PSS by key encoding: `0x0804` for a PKCS#1 key, `0x0809` for
-  a PSS-restricted key. No other registry makes that distinction, so a single
-  OID maps to two TLS values.
+- TLS splits RSASSA-PSS into six values where PKIX has one OID, and the split
+  encodes a property of the **certificate**, not of the signature. Both sign
+  identically; `rsae` means the key's SPKI says `rsaEncryption`
+  (`1.2.840.113549.1.1.1`) — a general RSA key that may also produce PKCS#1 v1.5
+  signatures — while `pss` means the SPKI itself says `id-RSASSA-PSS`
+  (`…1.1.10`), a key restricted to PSS. A peer advertises both because it is
+  stating which certificate *shapes* it accepts.
+
+  The consequence for a map: **the OID column cannot disambiguate them.** Both
+  rows carry `1.2.840.113549.1.1.10` as the signature OID, and the
+  discriminator lives in a different field of a different structure. The hash is
+  not in the OID either — it sits in the `RSASSA-PSS-params`, which is why one
+  OID serves all three hashes while PKCS#1 v1.5 mints a separate OID per hash
+  (`…1.1.11/.12/.13`). Three registries, three granularities.
 - COSE splits AES-CCM by nonce and tag length — eight values (`10`–`13`,
   `30`–`33`) against two in the AEAD registry (`3`, `4`). There is no 1:1
   mapping in either direction.
