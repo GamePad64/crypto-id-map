@@ -1,0 +1,6 @@
+# Editors
+.idea/
+.vscode/
+
+# Agent worktrees and session state
+.claude/
