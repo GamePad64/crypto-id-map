@@ -1,0 +1,35 @@
+algorithm,cose_alg,jose_alg,x509_oid,status,notes
+AES-KW-128,-3,A128KW,2.16.840.1.101.3.4.1.5,rfc,
+AES-KW-192,-4,A192KW,2.16.840.1.101.3.4.1.25,rfc,
+AES-KW-256,-5,A256KW,2.16.840.1.101.3.4.1.45,rfc,
+AES-KW-pad-128,,,2.16.840.1.101.3.4.1.8,rfc,RFC 5649 padded wrap; OID only
+AES-KW-pad-192,,,2.16.840.1.101.3.4.1.28,rfc,OID only
+AES-KW-pad-256,,,2.16.840.1.101.3.4.1.48,rfc,OID only
+AES-GCM-KW-128,,A128GCMKW,,rfc,JOSE only; COSE has no GCM key wrap
+AES-GCM-KW-192,,A192GCMKW,,rfc,JOSE only
+AES-GCM-KW-256,,A256GCMKW,,rfc,JOSE only
+ChaCha20-Poly1305 key wrap,,,,none,absent from COSE and JOSE in any key-wrap role
+direct,-6,dir,,rfc,use the CEK as-is
+RSA-OAEP SHA-1,-40,RSA-OAEP,1.2.840.113549.1.1.7,rfc,the JOSE name RSA-OAEP means SHA-1
+RSA-OAEP SHA-256,-41,RSA-OAEP-256,1.2.840.113549.1.1.7,rfc,same OID as SHA-1; the hash lives in the parameters
+RSA-OAEP SHA-384,,RSA-OAEP-384,1.2.840.113549.1.1.7,rfc,JOSE only; from W3C WebCrypto not RFC 7518
+RSA-OAEP SHA-512,-42,RSA-OAEP-512,1.2.840.113549.1.1.7,rfc,
+RSAES-PKCS1-v1_5,,RSA1_5,1.2.840.113549.1.1.1,deprecated,Recommended- in JOSE; deliberately never given a COSE value
+ECDH-ES+HKDF-256,-25,,,rfc,COSE uses HKDF here; bare JOSE ECDH-ES uses Concat KDF instead
+ECDH-ES+HKDF-512,-26,,,rfc,COSE only
+ECDH-SS+HKDF-256,-27,,,rfc,static-static; no JOSE equivalent
+ECDH-SS+HKDF-512,-28,,,rfc,static-static; no JOSE equivalent
+ECDH-ES (Concat KDF direct),,ECDH-ES,,rfc,JOSE only
+ECDH-ES+A128KW,-29,ECDH-ES+A128KW,,rfc,both registries use Concat KDF for this one
+ECDH-ES+A192KW,-30,ECDH-ES+A192KW,,rfc,
+ECDH-ES+A256KW,-31,ECDH-ES+A256KW,,rfc,
+ECDH-SS+A128KW,-32,,,rfc,COSE only
+ECDH-SS+A192KW,-33,,,rfc,COSE only
+ECDH-SS+A256KW,-34,,,rfc,COSE only
+direct+HKDF-SHA-256,-10,,,rfc,COSE only
+direct+HKDF-SHA-512,-11,,,rfc,COSE only
+direct+HKDF-AES-128,-12,,,rfc,COSE only
+direct+HKDF-AES-256,-13,,,rfc,COSE only
+PBES2-HS256+A128KW,,PBES2-HS256+A128KW,1.2.840.113549.1.5.13,rfc,OID is generic PBES2
+PBES2-HS384+A192KW,,PBES2-HS384+A192KW,1.2.840.113549.1.5.13,rfc,
+PBES2-HS512+A256KW,,PBES2-HS512+A256KW,1.2.840.113549.1.5.13,rfc,

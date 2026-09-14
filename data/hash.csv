@@ -1,0 +1,19 @@
+algorithm,cose_alg,iana_named_info,x509_oid,multihash,status,notes
+SHA-256,-16,1,2.16.840.1.101.3.4.2.1,0x12,rfc,
+SHA-384,-43,7,2.16.840.1.101.3.4.2.2,0x20,rfc,
+SHA-512,-44,8,2.16.840.1.101.3.4.2.3,0x13,rfc,
+SHA-512/256,-17,,,0x1015,rfc,
+SHA-256/64,-15,5,,,rfc,truncated
+SHA3-224,,9,2.16.840.1.101.3.4.2.7,0x17,rfc,absent from COSE
+SHA3-256,,10,2.16.840.1.101.3.4.2.8,0x16,rfc,absent from COSE
+SHA3-384,,11,2.16.840.1.101.3.4.2.9,0x15,rfc,absent from COSE
+SHA3-512,,12,2.16.840.1.101.3.4.2.10,0x14,rfc,absent from COSE
+SHAKE128,-18,,2.16.840.1.101.3.4.2.11,0x18,mixed,multihash entry is draft; absent from Named Info
+SHAKE256,-45,,2.16.840.1.101.3.4.2.12,0x19,mixed,multihash entry is draft; absent from Named Info
+TurboSHAKE128,-261,,,,rfc,COSE only
+TurboSHAKE256,-262,,,,rfc,COSE only
+KT128,-263,k12-256,,,mixed,Named Info has a name string but no numeric id
+KT256,-264,k12-512,,,mixed,Named Info has a name string but no numeric id
+BLAKE2b-256,,blake2b-256,,0xb220,mixed,Named Info name string only; no numeric id and no COSE
+BLAKE2s-256,,blake2s-256,,0xb260,mixed,Named Info name string only; no numeric id and no COSE
+BLAKE3,,,,0x1e,none,not in any IANA registry; multihash entry is draft

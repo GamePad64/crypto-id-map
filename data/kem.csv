@@ -1,0 +1,18 @@
+algorithm,cose_crv,jose_crv,tls_group,hpke_kem,x509_oid,multicodec_pub,status,notes
+X25519,4,X25519,29,0x0020,1.3.101.110,0xec,rfc,HPKE entry is DHKEM(X25519 HKDF-SHA256)
+X448,5,X448,30,0x0021,1.3.101.111,0x1204,rfc,HPKE entry is DHKEM(X448 HKDF-SHA512)
+ECDH-P256,1,P-256,23,0x0010,1.2.840.10045.3.1.7,0x1200,rfc,
+ECDH-P384,2,P-384,24,0x0011,1.3.132.0.34,0x1201,rfc,
+ECDH-P521,3,P-521,25,0x0012,1.3.132.0.35,0x1202,rfc,
+secp256k1,8,secp256k1,22,0x0016,,0xe7,mixed,HPKE from draft-wahby-cfrg-hpke-kem-secp256k1-01
+ML-KEM-512,,,512,0x0040,2.16.840.1.101.3.4.4.1,0x120b,mixed,TLS group RFC-backed; HPKE from draft-connolly-cfrg-hpke-mlkem-04
+ML-KEM-768,,,513,0x0041,2.16.840.1.101.3.4.4.2,0x120c,mixed,TLS group RFC-backed; HPKE draft
+ML-KEM-1024,,,514,0x0042,2.16.840.1.101.3.4.4.3,0x120d,mixed,TLS group RFC-backed; HPKE draft
+X-Wing,,,,0x647A,1.3.6.1.4.1.62253.25722,,draft,X25519+ML-KEM-768; HPKE only; OID is a self-assigned private-enterprise arc not a PKIX allocation
+X25519MLKEM768,,,4588,,,,rfc,RFC 10024; the only PQ hybrid marked Recommended=Y; TLS only
+SecP256r1MLKEM768,,,4587,,,,rfc,TLS only
+SecP384r1MLKEM1024,,,4589,,,,rfc,TLS only
+MLKEM768-P256,,,,0x0050,,,draft,draft-ietf-hpke-pq-04; HPKE only; P-curve not X25519
+MLKEM1024-P384,,,,0x0051,,,draft,draft-ietf-hpke-pq-04; HPKE only
+X25519Kyber768Draft00,,,25497,0x0030,,,obsolete,DEAD - pre-standard Kyber; do not implement
+SecP256r1Kyber768Draft00,,,25498,,,,obsolete,DEAD - pre-standard Kyber; do not implement

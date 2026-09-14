@@ -1,0 +1,18 @@
+algorithm,cose_alg,jose_alg,x509_oid,status,notes
+HMAC-SHA256,5,HS256,1.2.840.113549.2.9,rfc,COSE 5 is HMAC 256/256; OID is id-hmacWithSHA256 on the RSADSI arc not NIST
+HMAC-SHA384,6,HS384,1.2.840.113549.2.10,rfc,COSE 6 is HMAC 384/384
+HMAC-SHA512,7,HS512,1.2.840.113549.2.11,rfc,COSE 7 is HMAC 512/512
+HMAC-SHA256/64,4,,,rfc,truncated tag; COSE only with no JOSE or X.509 equivalent
+AES-MAC 128/64,14,,,rfc,CBC-MAC not CMAC
+AES-MAC 256/64,15,,,rfc,CBC-MAC not CMAC
+AES-MAC 128/128,25,,,rfc,non-contiguous with 14 and 15 because 16-23 are taken by other algorithms
+AES-MAC 256/128,26,,,rfc,non-contiguous with 14 and 15
+AES-CMAC,,,,none,RFC 4493 but no OID in the NIST CSOR aes arc and no COSE or JOSE entry
+AES-GMAC-128,,,2.16.840.1.101.3.4.1.9,rfc,OID only
+AES-GMAC-192,,,2.16.840.1.101.3.4.1.29,rfc,OID only
+AES-GMAC-256,,,2.16.840.1.101.3.4.1.49,rfc,OID only
+KMAC128,,,2.16.840.1.101.3.4.2.21,rfc,id-kmac128; a second OID 2.16.840.1.101.3.4.2.19 exists as id-KMACWithSHAKE128
+KMAC256,,,2.16.840.1.101.3.4.2.22,rfc,id-kmac256; a second OID 2.16.840.1.101.3.4.2.20 exists as id-KMACWithSHAKE256
+Poly1305 standalone,,,,none,exists only inside the ChaCha20-Poly1305 AEAD which is COSE 24
+BLAKE2 MAC mode,,,,none,BLAKE2 hash OIDs exist on 1.3.6.1.4.1.1722.12.2 but the keyed mode is unregistered
+BLAKE3 keyed mode,,,,none,BLAKE3 is unregistered everywhere

@@ -1,0 +1,31 @@
+scope,field,cose_label,jwk_name,disagreement
+common,kty,1,kty,
+common,kid,2,kid,COSE is a byte string; JWK is a text string
+common,alg,3,alg,COSE allows int or text; JWK is text only
+common,key_ops,4,key_ops,COSE allows text or int elements; JWK is text only
+common,Base IV,5,,COSE only
+common,use,,use,JWK only
+common,x5u x5c x5t x5t#S256,separate COSE x5 registry,x5u x5c x5t x5t#S256,different registries on each side
+OKP,crv,-1,crv,
+OKP,x,-2,x,
+OKP,d,-4,d,COSE skips -3 so that OKP and EC2 labels line up
+EC2,crv,-1,crv,
+EC2,x,-2,x,
+EC2,y,-3,y,COSE y may be a boolean for point compression; JWK requires the full coordinate
+EC2,d,-4,d,
+RSA,n,-1,n,
+RSA,e,-2,e,
+RSA,d,-3,d,
+RSA,p,-4,p,
+RSA,q,-5,q,
+RSA,dP,-6,dp,name case differs
+RSA,dQ,-7,dq,name case differs
+RSA,qInv,-8,qi,name differs
+RSA,other,-9,oth,name differs
+RSA,r_i,-10,r,element inside the oth array
+RSA,d_i,-11,d,element inside the oth array
+RSA,t_i,-12,t,element inside the oth array
+Symmetric,k,-1,k,
+AKP,pub,-1,pub,
+AKP,priv,-2,priv,
+HSS-LMS,pub,-1,,COSE only

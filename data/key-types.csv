@@ -1,0 +1,19 @@
+key_type,cose_kty,cose_crv,jwk_kty,jwk_crv,spki_oid,multicodec_pub,multicodec_priv,ssh_name,pgp_algo_id,notes
+OKP/Ed25519,1,6,OKP,Ed25519,1.3.101.112,0xed,0x1300,ssh-ed25519,27 (v6) / 22 EdDSALegacy (v4),
+OKP/Ed448,1,7,OKP,Ed448,1.3.101.113,0x1203,0x1311,ssh-ed448,28,
+OKP/X25519,1,4,OKP,X25519,1.3.101.110,0xec,0x1302,,25,no SSH representation
+OKP/X448,1,5,OKP,X448,1.3.101.111,0x1204,0x1312,,26,no SSH representation
+EC2/P-256,2,1,EC,P-256,1.2.840.10045.2.1 + 1.2.840.10045.3.1.7,0x1200,0x1306,ecdsa-sha2-nistp256,19 ECDSA / 18 ECDH,SPKI needs two OIDs - algorithm plus curve
+EC2/P-384,2,2,EC,P-384,1.2.840.10045.2.1 + 1.3.132.0.34,0x1201,0x1307,ecdsa-sha2-nistp384,19 / 18,
+EC2/P-521,2,3,EC,P-521,1.2.840.10045.2.1 + 1.3.132.0.35,0x1202,0x1308,ecdsa-sha2-nistp521,19 / 18,
+EC2/secp256k1,2,8,EC,secp256k1,1.2.840.10045.2.1 + 1.3.132.0.10,0xe7,0x1301,,19 / 18,no SSH representation
+RSA,3,,RSA,,1.2.840.113549.1.1.1,0x1205,0x1305,ssh-rsa,1 (2 enc-only and 3 sign-only are deprecated),SSH signature names are rsa-sha2-256 and rsa-sha2-512
+Symmetric/oct,4,,oct,,,,,,,no public-key representation by definition
+ML-DSA-44,7,,AKP,,2.16.840.1.101.3.4.3.17,0x1210,0x1317,ssh-mldsa-44 (draft),,COSE/JWK kty is the generic AKP so alg is REQUIRED to name the parameter set
+ML-DSA-65,7,,AKP,,2.16.840.1.101.3.4.3.18,0x1211,0x1318,ssh-mldsa-65 (draft),,same AKP kty as ML-DSA-44 and -87
+ML-DSA-87,7,,AKP,,2.16.840.1.101.3.4.3.19,0x1212,0x1319,ssh-mldsa-87 (draft),,same AKP kty as ML-DSA-44 and -65
+ML-KEM-512,,,,,2.16.840.1.101.3.4.4.1,0x120b,0x1313,,,no COSE or JWK kty at all
+ML-KEM-768,,,,,2.16.840.1.101.3.4.4.2,0x120c,0x1314,,,no COSE or JWK kty at all
+ML-KEM-1024,,,,,2.16.840.1.101.3.4.4.3,0x120d,0x1315,,,no COSE or JWK kty at all
+HSS-LMS,5,,,,1.2.840.113549.1.9.16.3.17,,,,,COSE only - no JWK and no multicodec
+XMSS,,,,,,,,,,essentially unrepresented outside the RFC 8391 encoding

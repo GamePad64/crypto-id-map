@@ -1,0 +1,18 @@
+algorithm,cose_alg,jose_alg,hpke_kdf,x509_oid,status,notes
+HKDF-SHA256,-10,,0x0001,1.2.840.113549.1.9.16.3.28,rfc,COSE name is direct+HKDF-SHA-256; JOSE has no HKDF at all
+HKDF-SHA384,,,0x0002,1.2.840.113549.1.9.16.3.29,rfc,absent from COSE and JOSE
+HKDF-SHA512,-11,,0x0003,1.2.840.113549.1.9.16.3.30,rfc,COSE name is direct+HKDF-SHA-512
+ECDH-ES+HKDF-256,-25,ECDH-ES+A128KW,,,rfc,JOSE uses Concat KDF here not HKDF
+ECDH-ES+HKDF-512,-26,,,,rfc,COSE only
+ECDH-SS+HKDF-256,-27,,,,rfc,COSE only
+ECDH-SS+HKDF-512,-28,,,,rfc,COSE only
+direct+HKDF-AES-128,-12,,,,rfc,COSE only
+direct+HKDF-AES-256,-13,,,,rfc,COSE only
+SHAKE128 (as KDF),,,0x0010,,draft,draft-ietf-hpke-pq-04
+SHAKE256 (as KDF),,,0x0011,,draft,draft-ietf-hpke-pq-04
+TurboSHAKE128 (as KDF),,,0x0012,,draft,draft-ietf-hpke-pq-04
+TurboSHAKE256 (as KDF),,,0x0013,,draft,draft-ietf-hpke-pq-04
+PBKDF2,,PBES2-HS256+A128KW,,1.2.840.113549.1.5.12,rfc,JOSE never exposes it standalone only fused with AES-KW
+scrypt,,,,1.3.6.1.4.1.11591.4.11,mixed,RFC 7914 but the OID sits on the GnuPG private-enterprise arc
+Argon2id,,,,,none,no identifier in any registry; PHC string $argon2id$ only; RFC 9106 states it has no IANA actions
+bcrypt,,,,,none,no OID no RFC no IANA registration; identified by the $2a$/$2b$ prefix
